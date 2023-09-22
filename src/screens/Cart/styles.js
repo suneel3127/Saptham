@@ -82,6 +82,10 @@ const styles = StyleSheet.create({
       borderTopColor: "#ccc",
       paddingTop: 8,
     },
+    ActivityLoaderCont:{
+      flex: 1,
+      justifyContent: 'center',
+    }
   });
 
   export default styles;

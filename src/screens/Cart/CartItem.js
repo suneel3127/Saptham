@@ -4,11 +4,10 @@ import { useDispatch } from "react-redux";
 import { removeItemFromCart } from "../../redux/slice";
 import styles from "./styles";
 
-const CartItem = ({item}) => {
+const CartItem = ({item,removeItemFromCart}) => {
     const dispatch = useDispatch();
-    
     const removeFromCart = () => {
-      dispatch(removeItemFromCart(item));
+      removeItemFromCart(item.id)
     };
 
   return (
@@ -16,8 +15,8 @@ const CartItem = ({item}) => {
       <Image source={{ uri: item.images[0].src  }} style={styles.image} />
       <View style={styles.itemDetails}>
         <Text style={styles.itemName}>{item.name}</Text>
-        <Text style={styles.itemPrice}>Price: {Math.round(item.noOfItems*item.price)}</Text>
-        <Text style={styles.itemQuantity}>{item.variant_name}: {item.noOfItems} * {item.quantity}</Text>
+        <Text style={styles.itemPrice}>Price: {Math.round(item.quantity*item.price)}</Text>
+        <Text style={styles.itemQuantity}>{item.variant_name}: {item.variant_quantity} * {item.quantity}</Text>
       </View>
       <TouchableOpacity onPress={removeFromCart} style={styles.removeButton}>
         <Text style={styles.removeButtonText}>Remove</Text>

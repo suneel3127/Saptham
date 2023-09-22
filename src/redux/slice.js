@@ -25,8 +25,12 @@ const slice = createSlice({
       }
     },
     removeItemFromCart: (state, action) => {
-        state.cartItems = state.cartItems.filter((item) => item.id !== action.payload.id);
+        state.cartItems = state.cartItems.filter((item) => item.id !== action.payload);
       },
+    emptyCart : ( state , action) => {
+      console.log("inside redux")
+      state.cartItems =[];
+    },  
     setStores: (state,action) =>{
       state.stores = action.payload
     },  
@@ -42,7 +46,7 @@ const slice = createSlice({
   },
 });
 
-export const { addItemToCart, removeItemFromCart, setStores, setUser, setProducts, setVariants, setReviews } = slice.actions;
+export const { addItemToCart, removeItemFromCart, setStores, setUser, setProducts, setVariants, setReviews , emptyCart} = slice.actions;
 
 export default slice.reducer;
 

@@ -17,7 +17,6 @@ const RegisterScreen = (props) => {
     try {
       
       let response = await createUserWithEmailAndPassword(auth, email, password);
-      console.log(response.user)
       writeUserData(response.user.uid,response.user.email, password)
       navigation.navigate("Login"); 
     } catch (error) {

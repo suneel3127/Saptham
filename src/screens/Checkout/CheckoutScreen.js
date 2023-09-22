@@ -1,73 +1,128 @@
-import React, { useState } from 'react';
+import React, { useState, useLayoutEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import styles from './styles';
 import { useDispatch,useSelector } from "react-redux";
 import AddressForm from '../Address/AddressForm';
 
-const CheckoutScreen= () => {
+import {setUser} from "../../redux/slice";
+
+import { getDatabase, ref, set, get } from "firebase/database";
+
+import BackButton from "../../components/BackButton/BackButton";
+
+const CheckoutScreen= (props) => {
+    const { navigation } = props;
+    const dispatch = useDispatch();
     const [deliverToHome, setDeliverToHome] = useState(true);
-  const [pickUpAtStore, setPickUpAtStore] = useState(false);
-  const [showAddressSection, setShowAddressSection] = useState(true);
-  const [showStoreSection, setShowStoreSection] = useState(false);
-  const user = useSelector((app) => app.state.userDetails);
-  console.log(user)
-  const stores = useSelector((app) => app.state.stores);
-  const [isAddressModalVisible, setAddressModalVisible] = useState(false);
-  const [addressOptionsVisibility, setAddressOptionsVisibility] = useState(
-    user?.shipping_address?.map(() => false)
-  );
-  const [storeOptionsVisibility, setStoreOptionsVisibility] = useState(
-    stores.map(() => false)
-  );
-  const [selectedPaymentOption,setSelectedPaymentOption] = useState(false);
+    const [pickUpAtStore, setPickUpAtStore] = useState(false);
+    const [showAddressSection, setShowAddressSection] = useState(true);
+    const [showStoreSection, setShowStoreSection] = useState(false);
+    const user = useSelector((app) => app.state.userDetails);
+    console.log(user)
+    const stores = useSelector((app) => app.state.stores);
+    const [isAddressModalVisible, setAddressModalVisible] = useState(false);
+    const [addressOptionsVisibility, setAddressOptionsVisibility] = useState(
+      user?user.shipping_address?.map(() => false):[]
+    );
+    const [storeOptionsVisibility, setStoreOptionsVisibility] = useState(
+      stores.map(() => false)
+    );
+    const [selectedPaymentOption,setSelectedPaymentOption] = useState(false);
 
-  const handleAddNewAddress = () => {
-    setAddressModalVisible(true);
-  };
+    useLayoutEffect(() => {
+      navigation.setOptions({
+        headerLeft: () => (
+          <BackButton
+            onPress={() => {
+              navigation.navigate("Cart", { key: Math.random() }); 
+            }}
+          />
+        ),
+        headerRight: () => <View />,
+      });
+    }, []);
 
-  const handleDeliverToHomePress = () => {
-    setDeliverToHome(true);
-    setPickUpAtStore(false);
-    setShowAddressSection(true);
-    setShowStoreSection(false);
-  };
+    const handleAddNewAddress = () => {
+      setAddressModalVisible(true);
+    };
 
-  const handlePickUpAtStorePress = () => {
-    setDeliverToHome(false);
-    setPickUpAtStore(true);
-    setShowAddressSection(false);
-    setShowStoreSection(true);
-  };
+    const handleDeliverToHomePress = () => {
+      setDeliverToHome(true);
+      setPickUpAtStore(false);
+      setShowAddressSection(true);
+      setShowStoreSection(false);
+    };
 
-  const toggleAddressOption = (index) => {
-   
-     let updatedVisibility =addressOptionsVisibility.map((x,i)=>{
+    const handlePickUpAtStorePress = () => {
+      setDeliverToHome(false);
+      setPickUpAtStore(true);
+      setShowAddressSection(false);
+      setShowStoreSection(true);
+    };
+
+    const toggleAddressOption = (index) => {
+      let updatedVisibility =addressOptionsVisibility.map((x,i)=>{
+          if(i==index){
+              return !x
+          }else{
+              return false;
+          }
+      })
+      setAddressOptionsVisibility(updatedVisibility);
+    };
+    const saveAddress = (address) =>{
+      const timestamp = Date.now();
+      const randomNum = Math.floor(Math.random() * 10000); // Adjust as needed
+      const addressId=  `${timestamp}-${randomNum}`;
+      const newAddress = {
+        id: addressId,
+        address: address,
+      };
+      const db = getDatabase();
+      const userRef = ref(db, 'users/' + user?.id); 
+      const updatedShippingAddress = user.shipping_address
+        ? [...user.shipping_address, newAddress]
+        : [newAddress];
+      const updatedUser = { ...user, shipping_address: updatedShippingAddress };
+      set(userRef, updatedUser)
+        .then(() => {
+          console.log('User details updated successfully!');
+          dispatch(setUser(updatedUser));
+        })
+        .catch((error) => {
+          console.error('Error updating user details:', error);
+        });
+    }
+    const toggleStoreOption = (index) => {
+    
+      let updatedVisibility =storeOptionsVisibility.map((x,i)=>{
         if(i==index){
             return !x
         }else{
             return false;
         }
     })
-    setAddressOptionsVisibility(updatedVisibility);
+    setStoreOptionsVisibility(updatedVisibility);
   };
-  const toggleStoreOption = (index) => {
-   
-    let updatedVisibility =storeOptionsVisibility.map((x,i)=>{
-       if(i==index){
-           return !x
-       }else{
-           return false;
-       }
-   })
-   setStoreOptionsVisibility(updatedVisibility);
- };
- const selectPaymentOption = ()=>{
-    setSelectedPaymentOption(!selectedPaymentOption);
- }
- const continueToPayment = ()=>{
-    
- }
-
+  const selectPaymentOption = ()=>{
+      setSelectedPaymentOption(!selectedPaymentOption);
+  }
+  const continueToPayment = ()=>{
+      
+  }
+  const navigateToLogin = () =>{
+      navigation.navigate("Login"); 
+    }
+ if (user == null) {
+      return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text style={{ marginBottom:20}}>Please login to checkout</Text>
+          <TouchableOpacity  style={styles.loginButton}>
+            <Text onPress={navigateToLogin} style={styles.loginButtonText}>Login</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
 
   
   
@@ -157,7 +212,8 @@ const CheckoutScreen= () => {
                 isVisible={isAddressModalVisible}
                 onClose={() => setAddressModalVisible(false)}
                 onSaveAddress={(newAddress) => {
-                setAddressModalVisible(false);
+                    saveAddress(newAddress);
+                    setAddressModalVisible(false);          
                 }}
             />                        
       </View>

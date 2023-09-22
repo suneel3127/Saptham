@@ -119,6 +119,19 @@ const styles = StyleSheet.create({
     color: 'black',
     fontWeight: 'bold',
   },
+  loginButton: {
+    backgroundColor: 'black', // Change the background color as desired
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loginButtonText: {
+    color: 'white', // Change the text color as desired
+    fontSize: 18,
+    fontWeight: 'bold',
+  }
 
 
   });

@@ -1,32 +1,31 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Button } from 'react-native';
 import styles from './styles';
-import {  signInWithEmailAndPassword ,setPersistence, browserLocalPersistence} from 'firebase/auth';
+import {  signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 import {auth} from "../../firebase/config"
+import BackButton from "../../components/BackButton/BackButton";
+
 
 const LoginScreen = (props) => {
 
   const { navigation } = props;
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  
-  useEffect(()=>{
-    const enableSessionPersistence = async () => {
-      try {
-        await setPersistence(auth, browserLocalPersistence);
-      } catch (error) {
-        console.error('Error enabling session persistence:', error);
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        navigation.goBack();
       }
-    };
-    enableSessionPersistence();
-  },[])
+    });
+    return () => unsubscribe();
+  }, [navigation]);
+
   
 
   const handleLogin = async () => {
     try {
       let user = await signInWithEmailAndPassword(auth, email, password);
       console.log('User logged in successfully', user);
-      navigation.navigate("Account"); 
     } catch (error) {
       console.error('Error logging in:', error.message);
     }

@@ -16,11 +16,17 @@ import AddressForm from '../Address/AddressForm';
 const AccountScreen = (props) => {
   const { navigation } = props;
   const [user,setUser] = useState({});
-  // const user = useSelector((app) => app.state.userDetails);
-    useEffect(() => {
+  const [showAccountDetails, setShowAccountDetails] = useState(true);
+  const [showOrders, setShowOrders] = useState(false);
+  const [showAddresses, setShowAddresses] = useState(false);
+  const [isAddressModalVisible, setAddressModalVisible] = useState(false);
+  const db = getDatabase();
+  const userRef = ref(db, 'users/' + user?.id); 
+
+  useEffect(() => {
     const fetchUserData = async () => {
       onAuthStateChanged(auth, async (firebaseUser) => {
-       
+        
         if (firebaseUser) {
           const userId = firebaseUser.uid;
           const db = getDatabase();
@@ -40,16 +46,8 @@ const AccountScreen = (props) => {
         }
       });
     };
-
     fetchUserData();
   }, []);
-
-  const [showAccountDetails, setShowAccountDetails] = useState(true);
-  const [showOrders, setShowOrders] = useState(false);
-  const [showAddresses, setShowAddresses] = useState(false);
-  const [isAddressModalVisible, setAddressModalVisible] = useState(false);
-  const db = getDatabase();
-  const userRef = ref(db, 'users/' + user?.id); 
 
   
   
@@ -110,8 +108,9 @@ const AccountScreen = (props) => {
 
   const handleLogoutPress = async () => {
     try {
-      await signOut(auth); // Sign the user out
-      navigation.navigate('Login'); // Navigate to the login screen (or any other screen)
+      await signOut(auth);
+      setUser(null);
+      
     } catch (error) {
       console.error('Error logging out:', error);
     }
